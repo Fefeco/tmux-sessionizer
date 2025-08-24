@@ -358,6 +358,7 @@ fi
 if ! has_session "$selected_name"; then
     tmux new-session -ds "$selected_name" -c "$selected"
     hydrate "$selected_name" "$selected"
+    tmux send-keys -t "$selected_name" 'nvim -c "lua vim.schedule(function() require(\"telescope.builtin\").find_files() end)"' C-m
 fi
 
 switch_to "$selected_name"
