@@ -318,7 +318,26 @@ if [[ ! -z $session_cmd ]]; then
 elif [[ ! -z $user_selected ]]; then
     selected="$user_selected"
 else
-    selected=$(find_dirs | fzf)
+    declare -A path_map
+
+    # Construir el mapa: clave = ruta acortada, valor = ruta completa
+    while IFS= read -r full_path; do
+        if [[ "$full_path" == "$HOME"* ]]; then
+            short_path="~${full_path#$HOME}"
+        else
+            short_path="$full_path"
+        fi
+        path_map["$short_path"]="$full_path"
+    done < <(find_dirs)
+
+    # Mostrar solo las rutas cortas en fzf
+    selected_short=$(printf "%s\n" "${!path_map[@]}" | fzf --exit-0)
+
+    # Verificar que se haya hecho una selección
+    [[ -z "$selected_short" ]] && exit 0
+
+    # Recuperar la ruta completa
+    selected="${path_map[$selected_short]}"
 fi
 
 if [[ -z $selected ]]; then
